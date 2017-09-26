@@ -1,0 +1,12 @@
+<php
+    // requirement
+    require_once("RESTTransmission.class.php");
+    
+    class toStuipUpdater {
+        private stuipURL;
+        private sqlConnection;
+        
+        public function __construct($stuipURL, $sqlConnection) {
+            
+        }
+    }
