@@ -27,7 +27,6 @@
 			$this->setupHeaders($authToken);
 			
 			// test global scope, can be removed
-			print_r($GLOBALS);
 			print_r("\n");
 			print_r("URL at construct of TranmissionObj: " . $this->formatUrl($route[1], $params) . "\n");
 		}

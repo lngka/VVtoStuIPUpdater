@@ -11,7 +11,10 @@
 //     } else {
 //         echo "Connected successfully";
 //     }
-    
+    // RESTTransmission global settings
+    $echoForDebug = null;
+    $OptionStudIPRESTUseTokenAuth           = true;
+    $OptionStudIPRESTUrl                    = "https://studip.rz.uni-augsburg.de/api.php";
     
     // init updater
     $stuipURL = "stuipURL";
@@ -22,7 +25,7 @@
     // execute
     $courseID = "0ad9d3146731a933022f72f0c60bfc32";
     $val = $toStuipUpdater->updateStudentList($courseID);
-    echo "\n";
-    echo "toStuipUpdater says: $val\n";
+    echo "\nStuip says: \n";
+    print_r($val . "\n");
 ?>
    

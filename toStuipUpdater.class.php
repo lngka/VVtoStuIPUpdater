@@ -12,70 +12,70 @@
             $this->stuipURL = $sqlConnection;
             $this->stuipRESTToken = $stuipRESTToken;
         }
-        
+        /*
+         * function to check both student list and execute update if needed
+         * currently return student list from stuip
+         */
         public function updateStudentList($courseID) {
             
             $VVStudentList    = $this->getVVStudentList();
             $stuIPStudentList = $this->getStuIPStudentList($courseID);
             
-            // compare
-            $newStudentList = $this->compareStudentLists($VVStudentList, $stuIPStudentList);
+            // process both list
+            $newStudentList = $this->processStudentLists($VVStudentList, $stuIPStudentList);
 
             // exit when update unnecessary
-            if (!$newStudentList) {
-                return "Update unnecessary";
+            if (!count($newStudentList)) {
+                return "No changes, no update needed";
+            } else {
+                // execute changes
+                $route = array("PUT", "/uaux/course/" . $courseID);
+                $params = array();
+                $values = array(
+                    "autoren " => $newStudentList
+                );
+                $token = $this->__get("stuipRESTToken");
+                $transmission = new RESTTransmission($route, $params, $values, $token);
+                $response = $transmission->execute();
+                
+                print_r("Trying to update student list...");
+                return $response;
             }
             
-            return $newStudentList;
             
-//             // excute changes
-//             $route = array("PUT", "/uaux/course/" . $courseID);
-//             $params = array();
-//             $values = array(
-//                     "autoren " => $newStudentList
-//             );
-//             $transmission = new RESTTransmission($route, $params, $values, $token);
-//             $response = $transmission->execute();
-//             
-//             // report
-//             $response = json_encode($response, 128);
-//             return $response;
+
         }
         
         // TODO: get student list from VV's SQL server
-        // currently return empty array
+        // currently return a pre-defined array
         private function getVVStudentList() {
-            $studentListe = array();
-            return $studentListe;
+            $VVStudentList = array("abdulran", "ankermjo", "nguyenvo", "vollmeca", "wanghsia", "neustudent");
+            return $VVStudentList;
         }
         
         
         private function getStuIPStudentList($courseID) {
+            // StuIP store the student list under the JSON-Key "autoren"
+            $STUDENTLIST_KEY_NAME = "autoren";
+            
             // RESTTransmission global settings
             $echoForDebug = null;
             $OptionStudIPRESTUseTokenAuth           = true;
             $OptionStudIPRESTUrl                    = "https://studip.rz.uni-augsburg.de/api.php";
             
-            // RESTTransmission local settings
+            // RESTTransmission settings & execution
             $route = array("GET", "/uaux/course/" . $courseID);
             $params = array();
             $values = array();
             $token = $this->__get("stuipRESTToken");
-            
-            // RESTTransmission build & execute
             $transmission = new RESTTransmission($route, $params, $values, $token); 
             $response = $transmission->execute();
-            print_r($route);
-            print_r($params);
-            print_r($values);
-            print_r($token . "\n");
-            print_r($response . "\n");
             
             // RESTTransmission return stdClass if success, string if fail
+            // stdClass needs to be converted to array to access its attribute
             if(gettype($response) == "object") {
-                // stdClass needs to be converted to array to access its attribute
                 $response = json_decode(json_encode($response), true);
-                $studentListe = $response["autoren"];
+                $studentListe = $response[$STUDENTLIST_KEY_NAME];
                 return $studentListe;
             } else {
                 return $response;
@@ -83,10 +83,25 @@
             
         }
         
-        // TODO: compare both student lists
-        // currently returns $stuIPStudentList
-        private function compareStudentLists($VVStudentList, $stuIPStudentList) {
-            return $stuIPStudentList;
+        /*
+         * function to combine the student lists in VV and in StuIP
+         */
+        private function processStudentLists($VVStudentList, $stuIPStudentList) {
+            print_r("VVStudentList: \n");
+            print_r($VVStudentList);
+            print_r("stuIPStudentList: \n");
+            print_r($stuIPStudentList);
+            
+            $diffArr = array_diff($VVStudentList, $stuIPStudentList);
+            // return emtpy array if no difference between the two lists
+            if (!count($diffArr)) {
+                return array();
+            } else {
+                print_r("Merged list: \n");
+                print_r(array_merge($stuIPStudentList, $diffArr));
+                return array_merge($stuIPStudentList, $diffArr);
+            }
+            
         }
         
         public function __get($property) {
