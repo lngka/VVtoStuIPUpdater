@@ -2,15 +2,15 @@
     // requirement
     require_once("RESTTransmission.class.php");
     
-    class toStuipUpdater {
-        private $stuipURL;
+    class toStudIPupdater {
+        private $studIP_URL;
         private $sqlConnection;
-        private $stuipRESTToken; 
+        private $studIP_RESTToken; 
         
-        public function __construct($stuipURL, $sqlConnection, $stuipRESTToken) {
-            $this->stuipURL = $stuipURL;
+        public function __construct($studIP_URL, $sqlConnection, $studIP_RESTToken) {
+            $this->stuipURL = $studIP_URL;
             $this->stuipURL = $sqlConnection;
-            $this->stuipRESTToken = $stuipRESTToken;
+            $this->stuipRESTToken = $studIP_RESTToken;
         }
         /*
          * function to check both student list and execute update if needed
@@ -18,11 +18,11 @@
          */
         public function updateStudentList($courseID) {
             
-            $VVStudentList    = $this->getVVStudentList();
-            $stuIPStudentList = $this->getStuIPStudentList($courseID);
+            $VV_studentList    = $this->get_VV_studentList();
+            $studIP_studentList = $this->get_studIP_studentList($courseID);
             
             // process both list
-            $newStudentList = $this->processStudentLists($VVStudentList, $stuIPStudentList);
+            $newStudentList = $this->processStudentLists($VV_studentList, $studIP_studentList);
 
             // exit when update unnecessary
             if (!count($newStudentList)) {
@@ -41,20 +41,18 @@
                 print_r("Trying to update student list...");
                 return $response;
             }
-            
-            
 
         }
         
         // TODO: get student list from VV's SQL server
         // currently return a pre-defined array
-        private function getVVStudentList() {
-            $VVStudentList = array("abdulran", "ankermjo", "nguyenvo", "vollmeca", "wanghsia", "neustudent");
-            return $VVStudentList;
+        private function get_VV_studentList() {
+            $VV_studentList = array("abdulran", "ankermjo", "nguyenvo", "vollmeca", "wanghsia", "neustudent");
+            return $VV_studentList;
         }
         
         
-        private function getStuIPStudentList($courseID) {
+        private function get_studIP_studentList($courseID) {
             // StuIP store the student list under the JSON-Key "autoren"
             $STUDENTLIST_KEY_NAME = "autoren";
             
@@ -84,22 +82,27 @@
         }
         
         /*
-         * function to combine the student lists in VV and in StuIP
+         * function to process the student lists in VV and in StuIP
+		 * @param $VV_studentList {array}: an array of RZ-Kennung from VV
+		 * @param $studIP_studentList {array}: an array of RZ-Kennung from studIP
+		 * @return $merged_list {array}: a combination, add new students from VV, old students in studIP unchanged
+		 * @return array() : an emtpy array if both lists are the same
          */
-        private function processStudentLists($VVStudentList, $stuIPStudentList) {
+        private function processStudentLists($VV_studentList, $studIP_studentList) {
             print_r("VVStudentList: \n");
-            print_r($VVStudentList);
+            print_r($VV_studentList);
             print_r("stuIPStudentList: \n");
-            print_r($stuIPStudentList);
+            print_r($studIP_studentList);
             
-            $diffArr = array_diff($VVStudentList, $stuIPStudentList);
+            $diffArr = array_diff($VV_studentList, $studIP_studentList);
             // return emtpy array if no difference between the two lists
             if (!count($diffArr)) {
                 return array();
             } else {
+				$merged_list = array_merge($studIP_studentList, $diffArr);
                 print_r("Merged list: \n");
-                print_r(array_merge($stuIPStudentList, $diffArr));
-                return array_merge($stuIPStudentList, $diffArr);
+				print_r($merged_list);
+				return $merged_list;
             }
             
         }
